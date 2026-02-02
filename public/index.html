@@ -12,27 +12,40 @@
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- Markdown rendering -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.6/dist/purify.min.js"></script>
 
     <style>
       :root {
-        --bg: #f6f8fb;
+        /* Denver Health Brand Colors */
+        --dh-navy: #003b71;
+        --dh-teal: #00a3ad;
+        --dh-orange: #f47920;
+        --dh-light-teal: #e6f7f8;
+        
+        /* UI Colors */
+        --bg: #f0f6f7;
         --card: #ffffff;
-        --text: #0f172a;
-        --muted: #475569;
-        --border: #e2e8f0;
-        --shadow: 0 8px 24px rgba(2, 8, 23, 0.08);
-        --primary-1: #0ea5e9; /* sky */
-        --primary-2: #1d4ed8; /* blue */
+        --text: #1a2a3a;
+        --muted: #5a6b7c;
+        --border: #d4e3e5;
+        --shadow: 0 4px 20px rgba(0, 59, 113, 0.08);
+        --shadow-lg: 0 8px 32px rgba(0, 59, 113, 0.12);
+        
+        /* Semantic */
         --assistant: #ffffff;
-        --user: #dbeafe;
-        --danger: #b91c1c;
+        --user: #e6f2f3;
+        --danger: #c53030;
       }
 
       * { box-sizing: border-box; }
+      
       html, body {
         height: 100%;
         margin: 0;
-        font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji";
+        font-family: 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, Roboto, 'Helvetica Neue', Arial, sans-serif;
         color: var(--text);
         background: var(--bg);
       }
@@ -43,42 +56,47 @@
         flex-direction: column;
       }
 
+      /* ========== HEADER ========== */
       header {
         position: sticky;
         top: 0;
-        z-index: 10;
-        background: linear-gradient(90deg, var(--primary-1), var(--primary-2));
+        z-index: 100;
+        background: linear-gradient(135deg, var(--dh-navy) 0%, var(--dh-teal) 100%);
         color: #fff;
-        padding: 14px 16px;
-        border-bottom: 1px solid rgba(255,255,255,0.15);
+        padding: 0;
+        box-shadow: 0 2px 16px rgba(0, 59, 113, 0.25);
       }
 
       .header-row {
         max-width: 1100px;
         margin: 0 auto;
+        padding: 12px 20px;
         display: flex;
         align-items: center;
         justify-content: space-between;
-        gap: 12px;
+        gap: 16px;
       }
 
       .brand {
         display: flex;
         align-items: center;
-        gap: 10px;
+        gap: 14px;
         min-width: 0;
       }
 
-      .logo {
-        width: 40px;
-        height: 40px;
-        border-radius: 12px;
-        display: grid;
-        place-items: center;
-        background: rgba(255,255,255,0.18);
-        border: 1px solid rgba(255,255,255,0.25);
+      .logo-container {
+        width: 48px;
+        height: 48px;
         flex: 0 0 auto;
-        font-size: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .logo-container svg {
+        width: 100%;
+        height: 100%;
+        filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
       }
 
       .title-wrap {
@@ -87,21 +105,24 @@
 
       .title {
         margin: 0;
-        font-size: 16px;
+        font-size: 18px;
         font-weight: 700;
-        letter-spacing: 0.2px;
+        letter-spacing: 0.3px;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
+        text-shadow: 0 1px 2px rgba(0,0,0,0.1);
       }
 
       .subtitle {
-        margin: 2px 0 0 0;
+        margin: 3px 0 0 0;
         font-size: 12px;
         opacity: 0.9;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
+        font-weight: 500;
+        letter-spacing: 0.5px;
       }
 
       .header-actions {
@@ -112,91 +133,130 @@
 
       .btn {
         appearance: none;
-        border: 1px solid transparent;
-        background: rgba(255,255,255,0.16);
+        border: 2px solid rgba(255,255,255,0.3);
+        background: rgba(255,255,255,0.1);
         color: #fff;
-        padding: 9px 12px;
-        border-radius: 12px;
+        padding: 10px 18px;
+        border-radius: 10px;
         font-size: 13px;
         font-weight: 600;
         cursor: pointer;
-        transition: transform 0.05s ease, background 0.15s ease, border 0.15s ease;
+        transition: all 0.2s ease;
         user-select: none;
+        backdrop-filter: blur(4px);
       }
 
-      .btn:hover { background: rgba(255,255,255,0.22); }
-      .btn:active { transform: translateY(1px); }
-      .btn:disabled { opacity: 0.55; cursor: not-allowed; }
+      .btn:hover { 
+        background: rgba(255,255,255,0.2);
+        border-color: rgba(255,255,255,0.5);
+        transform: translateY(-1px);
+      }
+      .btn:active { transform: translateY(0); }
+      .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
 
+      /* ========== MAIN CONTENT ========== */
       main {
         width: 100%;
         max-width: 1100px;
         margin: 0 auto;
-        padding: 14px 16px 10px;
+        padding: 20px 20px 16px;
         flex: 1;
         display: flex;
         flex-direction: column;
-        gap: 12px;
+        gap: 16px;
       }
 
+      /* ========== WELCOME CARD ========== */
       .welcome {
-        background: var(--card);
+        background: linear-gradient(135deg, #ffffff 0%, var(--dh-light-teal) 100%);
         border: 1px solid var(--border);
         border-radius: 16px;
         box-shadow: var(--shadow);
-        padding: 14px 14px;
+        padding: 18px 20px;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .welcome::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--dh-navy), var(--dh-teal));
       }
 
       .welcome h2 {
-        margin: 0 0 6px 0;
-        font-size: 14px;
+        margin: 0 0 8px 0;
+        font-size: 15px;
+        font-weight: 700;
+        color: var(--dh-navy);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .welcome h2::before {
+        content: '✨';
       }
 
       .welcome p {
         margin: 0;
         color: var(--muted);
-        font-size: 13px;
-        line-height: 1.35;
+        font-size: 13.5px;
+        line-height: 1.5;
       }
 
+      /* ========== QUICK TOPICS ========== */
       .quick-topics {
         display: flex;
         flex-wrap: wrap;
-        gap: 8px;
+        gap: 10px;
       }
 
       .chip {
         border: 1px solid var(--border);
         background: #fff;
-        padding: 8px 10px;
-        border-radius: 999px;
+        padding: 10px 14px;
+        border-radius: 24px;
         font-size: 13px;
+        font-weight: 500;
         cursor: pointer;
-        transition: background 0.15s ease, transform 0.05s ease, border 0.15s ease;
+        transition: all 0.2s ease;
+        box-shadow: 0 2px 6px rgba(0,59,113,0.04);
       }
 
-      .chip:hover { background: #f8fafc; }
-      .chip:active { transform: translateY(1px); }
-      .chip:disabled { opacity: 0.6; cursor: not-allowed; }
+      .chip:hover { 
+        background: var(--dh-light-teal);
+        border-color: var(--dh-teal);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,163,173,0.15);
+      }
+      .chip:active { transform: translateY(0); }
+      .chip:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
 
+      /* ========== CHAT CONTAINER ========== */
       .chat-shell {
         background: var(--card);
         border: 1px solid var(--border);
-        border-radius: 16px;
-        box-shadow: var(--shadow);
+        border-radius: 20px;
+        box-shadow: var(--shadow-lg);
         display: flex;
         flex-direction: column;
         min-height: 55vh;
         overflow: hidden;
       }
 
+      /* ========== MESSAGES ========== */
       .messages {
-        padding: 14px;
+        padding: 18px;
         overflow: auto;
         flex: 1;
         display: flex;
         flex-direction: column;
-        gap: 10px;
+        gap: 14px;
+        background: linear-gradient(180deg, #fafcfc 0%, #ffffff 100%);
       }
 
       .row {
@@ -210,118 +270,346 @@
       .bubble {
         max-width: 780px;
         width: fit-content;
-        padding: 10px 12px;
-        border-radius: 14px;
-        border: 1px solid var(--border);
-        line-height: 1.35;
-        font-size: 13px;
-        white-space: pre-wrap;
-        word-wrap: break-word;
+        padding: 14px 16px;
+        border-radius: 16px;
+        line-height: 1.55;
+        font-size: 14px;
+        position: relative;
       }
 
       .bubble.assistant {
         background: var(--assistant);
+        border: 1px solid var(--border);
+        box-shadow: 0 2px 8px rgba(0,59,113,0.06);
+        border-top-left-radius: 4px;
       }
 
       .bubble.user {
-        background: var(--user);
-        border-color: #bfdbfe;
+        background: linear-gradient(135deg, var(--dh-navy) 0%, #004d8c 100%);
+        color: #fff;
+        border: none;
+        border-top-right-radius: 4px;
+        box-shadow: 0 3px 12px rgba(0,59,113,0.2);
       }
 
       .meta {
-        margin-top: 5px;
         font-size: 11px;
-        color: var(--muted);
-        opacity: 0.95;
+        margin-top: 8px;
+        opacity: 0.55;
+        font-weight: 500;
       }
 
-      .composer {
-        border-top: 1px solid var(--border);
-        padding: 10px;
+      .bubble.user .meta {
+        opacity: 0.7;
+      }
+
+      /* ========== MARKDOWN STYLES ========== */
+      .bubble.assistant .markdown-content {
+        line-height: 1.65;
+      }
+
+      .bubble.assistant .markdown-content h1,
+      .bubble.assistant .markdown-content h2,
+      .bubble.assistant .markdown-content h3,
+      .bubble.assistant .markdown-content h4 {
+        margin: 18px 0 10px 0;
+        font-weight: 700;
+        color: var(--dh-navy);
+        line-height: 1.35;
+      }
+
+      .bubble.assistant .markdown-content h1:first-child,
+      .bubble.assistant .markdown-content h2:first-child,
+      .bubble.assistant .markdown-content h3:first-child,
+      .bubble.assistant .markdown-content h4:first-child {
+        margin-top: 0;
+      }
+
+      .bubble.assistant .markdown-content h1 { font-size: 1.4em; }
+      .bubble.assistant .markdown-content h2 { font-size: 1.25em; }
+      .bubble.assistant .markdown-content h3 { font-size: 1.1em; }
+      .bubble.assistant .markdown-content h4 { font-size: 1em; }
+
+      .bubble.assistant .markdown-content p {
+        margin: 0 0 12px 0;
+      }
+
+      .bubble.assistant .markdown-content p:last-child {
+        margin-bottom: 0;
+      }
+
+      .bubble.assistant .markdown-content ul,
+      .bubble.assistant .markdown-content ol {
+        margin: 10px 0;
+        padding-left: 22px;
+      }
+
+      .bubble.assistant .markdown-content li {
+        margin-bottom: 6px;
+      }
+
+      .bubble.assistant .markdown-content li:last-child {
+        margin-bottom: 0;
+      }
+
+      .bubble.assistant .markdown-content strong {
+        font-weight: 700;
+        color: var(--dh-navy);
+      }
+
+      .bubble.assistant .markdown-content em {
+        font-style: italic;
+        color: var(--muted);
+      }
+
+      .bubble.assistant .markdown-content code {
+        background: var(--dh-light-teal);
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-family: 'SF Mono', 'Consolas', 'Monaco', monospace;
+        font-size: 0.9em;
+        color: var(--dh-navy);
+      }
+
+      .bubble.assistant .markdown-content pre {
+        background: #f8fafb;
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 14px;
+        overflow-x: auto;
+        margin: 12px 0;
+      }
+
+      .bubble.assistant .markdown-content pre code {
+        background: transparent;
+        padding: 0;
+        border-radius: 0;
+      }
+
+      .bubble.assistant .markdown-content blockquote {
+        border-left: 4px solid var(--dh-teal);
+        margin: 12px 0;
+        padding: 10px 16px;
+        background: var(--dh-light-teal);
+        border-radius: 0 8px 8px 0;
+        color: var(--muted);
+      }
+
+      .bubble.assistant .markdown-content a {
+        color: var(--dh-teal);
+        text-decoration: none;
+        font-weight: 500;
+        border-bottom: 1px solid transparent;
+        transition: border-color 0.2s ease;
+      }
+
+      .bubble.assistant .markdown-content a:hover {
+        border-bottom-color: var(--dh-teal);
+      }
+
+      .bubble.assistant .markdown-content hr {
+        border: none;
+        height: 1px;
+        background: var(--border);
+        margin: 16px 0;
+      }
+
+      .bubble.assistant .markdown-content table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 12px 0;
+        font-size: 0.95em;
+      }
+
+      .bubble.assistant .markdown-content th,
+      .bubble.assistant .markdown-content td {
+        border: 1px solid var(--border);
+        padding: 10px 12px;
+        text-align: left;
+      }
+
+      .bubble.assistant .markdown-content th {
+        background: var(--dh-light-teal);
+        font-weight: 600;
+        color: var(--dh-navy);
+      }
+
+      .bubble.assistant .markdown-content tr:nth-child(even) {
+        background: #fafcfc;
+      }
+
+      /* ========== LOADING ANIMATION ========== */
+      .loading-dots {
         display: flex;
-        gap: 10px;
+        gap: 5px;
+        align-items: center;
+        padding: 4px 0;
+      }
+
+      .loading-dots span {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--dh-teal);
+        animation: bounce 1.4s ease-in-out infinite both;
+      }
+
+      .loading-dots span:nth-child(1) { animation-delay: -0.32s; }
+      .loading-dots span:nth-child(2) { animation-delay: -0.16s; }
+      .loading-dots span:nth-child(3) { animation-delay: 0s; }
+
+      @keyframes bounce {
+        0%, 80%, 100% { 
+          transform: scale(0.6);
+          opacity: 0.4;
+        }
+        40% { 
+          transform: scale(1);
+          opacity: 1;
+        }
+      }
+
+      /* ========== COMPOSER ========== */
+      .composer {
+        display: flex;
+        gap: 12px;
+        padding: 16px 18px;
+        background: #fafcfc;
+        border-top: 1px solid var(--border);
         align-items: flex-end;
+      }
+
+      .composer textarea {
+        flex: 1;
+        border: 2px solid var(--border);
+        border-radius: 14px;
+        padding: 12px 16px;
+        resize: none;
+        font-size: 14px;
+        line-height: 1.45;
+        font-family: inherit;
+        color: var(--text);
+        background: #fff;
+        min-height: 48px;
+        max-height: 140px;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
+      }
+
+      .composer textarea::placeholder {
+        color: #94a3b8;
+      }
+
+      .composer textarea:focus {
+        outline: none;
+        border-color: var(--dh-teal);
+        box-shadow: 0 0 0 3px rgba(0,163,173,0.12);
+      }
+
+      .composer textarea:disabled {
+        background: #f8fafb;
+        opacity: 0.7;
+      }
+
+      .composer .send {
+        appearance: none;
+        border: none;
+        background: linear-gradient(135deg, var(--dh-navy) 0%, var(--dh-teal) 100%);
+        color: #fff;
+        padding: 12px 22px;
+        border-radius: 12px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        box-shadow: 0 3px 12px rgba(0,59,113,0.25);
+      }
+
+      .composer .send:hover:not(:disabled) {
+        transform: translateY(-1px);
+        box-shadow: 0 5px 16px rgba(0,59,113,0.35);
+      }
+
+      .composer .send:active:not(:disabled) {
+        transform: translateY(0);
+      }
+
+      .composer .send:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        transform: none;
+      }
+
+      /* ========== STATUS BAR ========== */
+      .status {
+        padding: 8px 18px 12px;
+        font-size: 12px;
+        text-align: center;
+        background: #fafcfc;
+      }
+
+      .status .error {
+        color: var(--danger);
+        font-weight: 500;
+      }
+
+      /* ========== FOOTER ========== */
+      footer {
+        text-align: center;
+        padding: 16px 20px;
+        font-size: 12px;
+        color: var(--muted);
+        border-top: 1px solid var(--border);
         background: #fff;
       }
 
-      textarea {
-        width: 100%;
-        resize: none;
-        border: 1px solid var(--border);
-        border-radius: 14px;
-        padding: 10px 12px;
-        font-size: 13px;
-        outline: none;
-        line-height: 1.35;
-        min-height: 44px;
-        max-height: 140px;
-      }
-
-      textarea:focus {
-        border-color: #93c5fd;
-        box-shadow: 0 0 0 3px rgba(59,130,246,0.18);
-      }
-
-      .send {
-        border: none;
-        background: linear-gradient(90deg, var(--primary-1), var(--primary-2));
-        color: #fff;
-        padding: 10px 14px;
-        border-radius: 14px;
-        cursor: pointer;
-        font-weight: 700;
-        font-size: 13px;
-        transition: transform 0.05s ease, opacity 0.15s ease;
-        flex: 0 0 auto;
-      }
-
-      .send:active { transform: translateY(1px); }
-      .send:disabled { opacity: 0.55; cursor: not-allowed; }
-
-      .status {
-        padding: 0 14px 12px 14px;
-        color: var(--muted);
-        font-size: 12px;
-      }
-
-      .error {
-        color: var(--danger);
+      footer span {
+        color: var(--dh-orange);
         font-weight: 600;
       }
 
-      footer {
-        padding: 14px 16px 18px;
-        color: var(--muted);
-        font-size: 12px;
-        text-align: center;
-      }
-
-      /* Loading dots */
-      .dots {
-        display: inline-flex;
-        gap: 4px;
-        align-items: center;
-        height: 18px;
-      }
-      .dot {
-        width: 6px;
-        height: 6px;
-        border-radius: 50%;
-        background: #64748b;
-        animation: bounce 1.1s infinite ease-in-out;
-      }
-      .dot:nth-child(2) { animation-delay: 0.12s; }
-      .dot:nth-child(3) { animation-delay: 0.24s; }
-
-      @keyframes bounce {
-        0%, 80%, 100% { transform: translateY(0); opacity: 0.6; }
-        40% { transform: translateY(-5px); opacity: 1; }
-      }
-
-      /* Mobile refinements */
+      /* ========== RESPONSIVE ========== */
       @media (max-width: 640px) {
-        .bubble { max-width: 92%; }
-        .header-actions .btn { padding: 9px 10px; }
+        .header-row {
+          padding: 10px 14px;
+        }
+
+        .logo-container {
+          width: 40px;
+          height: 40px;
+        }
+
+        .title {
+          font-size: 15px;
+        }
+
+        .subtitle {
+          font-size: 11px;
+        }
+
+        main {
+          padding: 14px 14px 10px;
+        }
+
+        .welcome {
+          padding: 14px 16px;
+        }
+
+        .chip {
+          padding: 8px 12px;
+          font-size: 12px;
+        }
+
+        .messages {
+          padding: 14px;
+        }
+
+        .composer {
+          padding: 12px 14px;
+        }
+
+        .composer .send {
+          padding: 12px 16px;
+        }
       }
     </style>
   </head>
@@ -330,34 +618,85 @@
     <div id="root"></div>
 
     <script type="text/babel">
-      const { useEffect, useMemo, useRef, useState } = React;
+      const { useState, useEffect, useRef, useMemo } = React;
 
-      function nowStamp() {
-        // Simple, local time display
-        const d = new Date();
-        const hh = String(d.getHours()).padStart(2, "0");
-        const mm = String(d.getMinutes()).padStart(2, "0");
-        return `${hh}:${mm}`;
+      // Denver Health Logo - Accurate recreation
+      function DenverHealthLogo() {
+        return (
+          <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              {/* Clip path for the heart shape */}
+              <clipPath id="heartClip">
+                <path d="M50 88 C15 55, 2 35, 12 20 C22 5, 38 5, 50 20 C62 5, 78 5, 88 20 C98 35, 85 55, 50 88Z" />
+              </clipPath>
+            </defs>
+            
+            {/* Heart background - split diagonally */}
+            <g clipPath="url(#heartClip)">
+              {/* Navy left side */}
+              <polygon points="0,0 55,0 45,100 0,100" fill="#003b71" />
+              {/* Teal right side */}
+              <polygon points="55,0 100,0 100,100 45,100" fill="#00a3ad" />
+            </g>
+            
+            {/* White mountain range */}
+            <path
+              d="M18 62 L32 42 L42 52 L58 32 L72 50 L82 62 Z"
+              fill="white"
+              clipPath="url(#heartClip)"
+            />
+            
+            {/* Orange sun/star burst */}
+            <g transform="translate(62, 28)">
+              <circle cx="0" cy="0" r="5" fill="#f47920" />
+              {/* Sun rays */}
+              <line x1="0" y1="-8" x2="0" y2="-12" stroke="#f47920" strokeWidth="2.5" strokeLinecap="round" />
+              <line x1="5.7" y1="-5.7" x2="8.5" y2="-8.5" stroke="#f47920" strokeWidth="2.5" strokeLinecap="round" />
+              <line x1="8" y1="0" x2="12" y2="0" stroke="#f47920" strokeWidth="2.5" strokeLinecap="round" />
+              <line x1="5.7" y1="5.7" x2="8.5" y2="8.5" stroke="#f47920" strokeWidth="2.5" strokeLinecap="round" />
+            </g>
+          </svg>
+        );
       }
 
+      // Loading dots component
       function LoadingDots() {
         return (
-          <span className="dots" aria-label="Loading">
-            <span className="dot"></span>
-            <span className="dot"></span>
-            <span className="dot"></span>
-          </span>
+          <div className="loading-dots">
+            <span></span>
+            <span></span>
+            <span></span>
+          </div>
         );
+      }
+
+      // Helper: current time string
+      function nowStamp() {
+        return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      }
+
+      // Markdown rendering with DOMPurify
+      function renderMarkdown(text) {
+        if (!text) return { __html: '' };
+        try {
+          const rawHtml = marked.parse(text, { breaks: true, gfm: true });
+          const cleanHtml = DOMPurify.sanitize(rawHtml, {
+            ALLOWED_TAGS: ['h1','h2','h3','h4','h5','h6','p','br','strong','em','u','s','a','ul','ol','li','blockquote','pre','code','hr','table','thead','tbody','tr','th','td'],
+            ALLOWED_ATTR: ['href','target','rel']
+          });
+          return { __html: cleanHtml };
+        } catch (e) {
+          return { __html: DOMPurify.sanitize(text) };
+        }
       }
 
       function App() {
         const [messages, setMessages] = useState(() => {
-          // Welcome message on first load (assistant)
           return [
             {
               role: "assistant",
               content:
-                "Welcome. Ask a question about coaching, feedback, leadership norms, engagement, pay conversations, or administrative leave. If I don’t have Denver Health-specific guidance in the documents, I will direct you to your HRBP.",
+                "Welcome to the **Denver Health Leader Navigator**! 👋\n\nI'm here to help you with questions about:\n- Coaching conversations\n- Leadership norms\n- Delivering feedback\n- Engagement surveys\n- Compensation discussions\n- Administrative leave\n\nIf I don't have Denver Health-specific guidance, I'll direct you to your **HRBP**.",
               ts: nowStamp(),
             },
           ];
@@ -385,14 +724,12 @@
         );
 
         useEffect(() => {
-          // Auto-scroll to latest message
           const el = messagesRef.current;
           if (!el) return;
           el.scrollTop = el.scrollHeight;
         }, [messages, loading]);
 
         useEffect(() => {
-          // Auto-grow textarea
           const ta = textareaRef.current;
           if (!ta) return;
           ta.style.height = "0px";
@@ -407,11 +744,10 @@
             {
               role: "assistant",
               content:
-                "New chat started. Ask a Denver Health leader question. If the documents do not contain guidance, I will direct you to your HRBP.",
+                "New conversation started. How can I help you today?\n\nFeel free to ask about leadership, coaching, engagement, compensation, or any HR-related topics covered in our documents.",
               ts: nowStamp(),
             },
           ]);
-          // focus input
           setTimeout(() => textareaRef.current?.focus(), 0);
         }
 
@@ -423,14 +759,11 @@
           setLoading(true);
 
           const userMsg = { role: "user", content: trimmed, ts: nowStamp() };
-
-          // Optimistic UI update
           const nextMessages = [...messages, userMsg];
           setMessages(nextMessages);
           setInput("");
 
           try {
-            // Build payload as required: { messages: [{ role, content }] }
             const payload = {
               messages: nextMessages.map((m) => ({ role: m.role, content: m.content })),
             };
@@ -448,7 +781,6 @@
 
             const data = await resp.json();
 
-            // Expected: { content: [{ text: "..." }] }
             const modelText =
               data &&
               Array.isArray(data.content) &&
@@ -466,7 +798,6 @@
             setMessages((prev) => [...prev, assistantMsg]);
           } catch (e) {
             setError(e && e.message ? e.message : String(e));
-            // Also add a safe assistant reply so the chat doesn't stall
             setMessages((prev) => [
               ...prev,
               {
@@ -483,7 +814,6 @@
         }
 
         function onKeyDown(e) {
-          // Enter sends, Shift+Enter newline
           if (e.key === "Enter" && !e.shiftKey) {
             e.preventDefault();
             sendMessage(input);
@@ -495,7 +825,9 @@
             <header>
               <div className="header-row">
                 <div className="brand">
-                  <div className="logo" aria-hidden="true">🏥</div>
+                  <div className="logo-container">
+                    <DenverHealthLogo />
+                  </div>
                   <div className="title-wrap">
                     <p className="title">Denver Health Leader Navigator</p>
                     <p className="subtitle">HRBP Assistant • Demo v1.0</p>
@@ -512,10 +844,10 @@
 
             <main>
               <section className="welcome">
-                <h2>Start here</h2>
+                <h2>Getting Started</h2>
                 <p>
-                  This tool is powered by Denver Health HR Documents. For more in depth information on safety concerns, harassment/discrimination allegations,
-                  legal questions, terminations, investigations, or anything not covered in the documents, kindly consult your HRBP.
+                  This tool is powered by Denver Health HR Documents. For in-depth information on safety concerns, harassment/discrimination allegations,
+                  legal questions, terminations, investigations, or anything not covered in the documents, please consult your HRBP.
                 </p>
               </section>
 
@@ -538,7 +870,14 @@
                   {messages.map((m, idx) => (
                     <div key={idx} className={"row " + (m.role === "user" ? "user" : "assistant")}>
                       <div className={"bubble " + (m.role === "user" ? "user" : "assistant")}>
-                        {m.content}
+                        {m.role === "user" ? (
+                          m.content
+                        ) : (
+                          <div 
+                            className="markdown-content" 
+                            dangerouslySetInnerHTML={renderMarkdown(m.content)} 
+                          />
+                        )}
                         <div className="meta">
                           {m.role === "user" ? "You" : "Navigator"} • {m.ts}
                         </div>
@@ -559,7 +898,7 @@
                 <div className="composer">
                   <textarea
                     ref={textareaRef}
-                    placeholder='Type your question… (Enter to send, Shift+Enter for a new line)'
+                    placeholder='Type your question… (Enter to send, Shift+Enter for new line)'
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
                     onKeyDown={onKeyDown}
@@ -578,13 +917,13 @@
                 </div>
 
                 <div className="status">
-                  {error ? <span className="error">Error: {error}</span> : <span>&nbsp;</span>}
+                  {error ? <span className="error">⚠️ {error}</span> : <span>&nbsp;</span>}
                 </div>
               </section>
             </main>
 
             <footer>
-              Denver Health &amp; Hospital Authority • Demo Version
+              <span>Denver Health</span> & Hospital Authority • Demo Version • est. 1860
             </footer>
           </div>
         );
