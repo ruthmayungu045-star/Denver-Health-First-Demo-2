@@ -1,0 +1,6 @@
+{
+  "name": "denver-health-leader-navigator",
+  "version": "1.0.0",
+  "description": "AI-powered HR guidance for Denver Health leaders",
+  "engines": { "node": ">=18" }
+}

@@ -1,0 +1,597 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <title>Denver Health Leader Navigator</title>
+
+    <!-- React via CDN -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <style>
+      :root {
+        --bg: #f6f8fb;
+        --card: #ffffff;
+        --text: #0f172a;
+        --muted: #475569;
+        --border: #e2e8f0;
+        --shadow: 0 8px 24px rgba(2, 8, 23, 0.08);
+        --primary-1: #0ea5e9; /* sky */
+        --primary-2: #1d4ed8; /* blue */
+        --assistant: #ffffff;
+        --user: #dbeafe;
+        --danger: #b91c1c;
+      }
+
+      * { box-sizing: border-box; }
+      html, body {
+        height: 100%;
+        margin: 0;
+        font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji";
+        color: var(--text);
+        background: var(--bg);
+      }
+
+      .app {
+        min-height: 100%;
+        display: flex;
+        flex-direction: column;
+      }
+
+      header {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        background: linear-gradient(90deg, var(--primary-1), var(--primary-2));
+        color: #fff;
+        padding: 14px 16px;
+        border-bottom: 1px solid rgba(255,255,255,0.15);
+      }
+
+      .header-row {
+        max-width: 1100px;
+        margin: 0 auto;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        min-width: 0;
+      }
+
+      .logo {
+        width: 40px;
+        height: 40px;
+        border-radius: 12px;
+        display: grid;
+        place-items: center;
+        background: rgba(255,255,255,0.18);
+        border: 1px solid rgba(255,255,255,0.25);
+        flex: 0 0 auto;
+        font-size: 20px;
+      }
+
+      .title-wrap {
+        min-width: 0;
+      }
+
+      .title {
+        margin: 0;
+        font-size: 16px;
+        font-weight: 700;
+        letter-spacing: 0.2px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .subtitle {
+        margin: 2px 0 0 0;
+        font-size: 12px;
+        opacity: 0.9;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .header-actions {
+        display: flex;
+        gap: 10px;
+        flex: 0 0 auto;
+      }
+
+      .btn {
+        appearance: none;
+        border: 1px solid transparent;
+        background: rgba(255,255,255,0.16);
+        color: #fff;
+        padding: 9px 12px;
+        border-radius: 12px;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: transform 0.05s ease, background 0.15s ease, border 0.15s ease;
+        user-select: none;
+      }
+
+      .btn:hover { background: rgba(255,255,255,0.22); }
+      .btn:active { transform: translateY(1px); }
+      .btn:disabled { opacity: 0.55; cursor: not-allowed; }
+
+      main {
+        width: 100%;
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 14px 16px 10px;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      .welcome {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        box-shadow: var(--shadow);
+        padding: 14px 14px;
+      }
+
+      .welcome h2 {
+        margin: 0 0 6px 0;
+        font-size: 14px;
+      }
+
+      .welcome p {
+        margin: 0;
+        color: var(--muted);
+        font-size: 13px;
+        line-height: 1.35;
+      }
+
+      .quick-topics {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .chip {
+        border: 1px solid var(--border);
+        background: #fff;
+        padding: 8px 10px;
+        border-radius: 999px;
+        font-size: 13px;
+        cursor: pointer;
+        transition: background 0.15s ease, transform 0.05s ease, border 0.15s ease;
+      }
+
+      .chip:hover { background: #f8fafc; }
+      .chip:active { transform: translateY(1px); }
+      .chip:disabled { opacity: 0.6; cursor: not-allowed; }
+
+      .chat-shell {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        box-shadow: var(--shadow);
+        display: flex;
+        flex-direction: column;
+        min-height: 55vh;
+        overflow: hidden;
+      }
+
+      .messages {
+        padding: 14px;
+        overflow: auto;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .row {
+        display: flex;
+        width: 100%;
+      }
+
+      .row.assistant { justify-content: flex-start; }
+      .row.user { justify-content: flex-end; }
+
+      .bubble {
+        max-width: 780px;
+        width: fit-content;
+        padding: 10px 12px;
+        border-radius: 14px;
+        border: 1px solid var(--border);
+        line-height: 1.35;
+        font-size: 13px;
+        white-space: pre-wrap;
+        word-wrap: break-word;
+      }
+
+      .bubble.assistant {
+        background: var(--assistant);
+      }
+
+      .bubble.user {
+        background: var(--user);
+        border-color: #bfdbfe;
+      }
+
+      .meta {
+        margin-top: 5px;
+        font-size: 11px;
+        color: var(--muted);
+        opacity: 0.95;
+      }
+
+      .composer {
+        border-top: 1px solid var(--border);
+        padding: 10px;
+        display: flex;
+        gap: 10px;
+        align-items: flex-end;
+        background: #fff;
+      }
+
+      textarea {
+        width: 100%;
+        resize: none;
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 10px 12px;
+        font-size: 13px;
+        outline: none;
+        line-height: 1.35;
+        min-height: 44px;
+        max-height: 140px;
+      }
+
+      textarea:focus {
+        border-color: #93c5fd;
+        box-shadow: 0 0 0 3px rgba(59,130,246,0.18);
+      }
+
+      .send {
+        border: none;
+        background: linear-gradient(90deg, var(--primary-1), var(--primary-2));
+        color: #fff;
+        padding: 10px 14px;
+        border-radius: 14px;
+        cursor: pointer;
+        font-weight: 700;
+        font-size: 13px;
+        transition: transform 0.05s ease, opacity 0.15s ease;
+        flex: 0 0 auto;
+      }
+
+      .send:active { transform: translateY(1px); }
+      .send:disabled { opacity: 0.55; cursor: not-allowed; }
+
+      .status {
+        padding: 0 14px 12px 14px;
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      .error {
+        color: var(--danger);
+        font-weight: 600;
+      }
+
+      footer {
+        padding: 14px 16px 18px;
+        color: var(--muted);
+        font-size: 12px;
+        text-align: center;
+      }
+
+      /* Loading dots */
+      .dots {
+        display: inline-flex;
+        gap: 4px;
+        align-items: center;
+        height: 18px;
+      }
+      .dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: #64748b;
+        animation: bounce 1.1s infinite ease-in-out;
+      }
+      .dot:nth-child(2) { animation-delay: 0.12s; }
+      .dot:nth-child(3) { animation-delay: 0.24s; }
+
+      @keyframes bounce {
+        0%, 80%, 100% { transform: translateY(0); opacity: 0.6; }
+        40% { transform: translateY(-5px); opacity: 1; }
+      }
+
+      /* Mobile refinements */
+      @media (max-width: 640px) {
+        .bubble { max-width: 92%; }
+        .header-actions .btn { padding: 9px 10px; }
+      }
+    </style>
+  </head>
+
+  <body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+      const { useEffect, useMemo, useRef, useState } = React;
+
+      function nowStamp() {
+        // Simple, local time display
+        const d = new Date();
+        const hh = String(d.getHours()).padStart(2, "0");
+        const mm = String(d.getMinutes()).padStart(2, "0");
+        return `${hh}:${mm}`;
+      }
+
+      function LoadingDots() {
+        return (
+          <span className="dots" aria-label="Loading">
+            <span className="dot"></span>
+            <span className="dot"></span>
+            <span className="dot"></span>
+          </span>
+        );
+      }
+
+      function App() {
+        const [messages, setMessages] = useState(() => {
+          // Welcome message on first load (assistant)
+          return [
+            {
+              role: "assistant",
+              content:
+                "Welcome. Ask a question about coaching, feedback, leadership norms, engagement, pay conversations, or administrative leave. If I don’t have Denver Health-specific guidance in the documents, I will direct you to your HRBP.",
+              ts: nowStamp(),
+            },
+          ];
+        });
+
+        const [input, setInput] = useState("");
+        const [loading, setLoading] = useState(false);
+        const [error, setError] = useState("");
+
+        const messagesRef = useRef(null);
+        const textareaRef = useRef(null);
+
+        const quickTopics = useMemo(
+          () => [
+            { label: "💬 Coaching", prompt: "How do I structure a coaching conversation using the Denver Health Coaching Model?" },
+            { label: "📋 Leadership Norms", prompt: "What are the Denver Health leadership norms and how should I apply them?" },
+            { label: "📊 Feedback", prompt: "What does Denver Health define as effective feedback, and what are tips for delivering it?" },
+            { label: "⏸️ Admin Leave", prompt: "What should I say and do when placing an employee on administrative leave?" },
+            { label: "🎯 Engagement", prompt: "How should I share and act on Your Voice, Our Vision engagement survey results with my team?" },
+            { label: "💰 Compensation", prompt: "How is pay determined at Denver Health, and how should leaders talk about pay?" },
+            { label: "🏆 Recognition", prompt: "How does Denver Health think about total rewards and recognition beyond compensation?" },
+            { label: "📚 LEAD Process", prompt: "What is LEAD at Denver Health and why is it important?" },
+          ],
+          []
+        );
+
+        useEffect(() => {
+          // Auto-scroll to latest message
+          const el = messagesRef.current;
+          if (!el) return;
+          el.scrollTop = el.scrollHeight;
+        }, [messages, loading]);
+
+        useEffect(() => {
+          // Auto-grow textarea
+          const ta = textareaRef.current;
+          if (!ta) return;
+          ta.style.height = "0px";
+          ta.style.height = Math.min(140, ta.scrollHeight) + "px";
+        }, [input]);
+
+        function resetChat() {
+          setError("");
+          setLoading(false);
+          setInput("");
+          setMessages([
+            {
+              role: "assistant",
+              content:
+                "New chat started. Ask a Denver Health leader question. If the documents do not contain guidance, I will direct you to your HRBP.",
+              ts: nowStamp(),
+            },
+          ]);
+          // focus input
+          setTimeout(() => textareaRef.current?.focus(), 0);
+        }
+
+        async function sendMessage(text) {
+          const trimmed = (text || "").trim();
+          if (!trimmed || loading) return;
+
+          setError("");
+          setLoading(true);
+
+          const userMsg = { role: "user", content: trimmed, ts: nowStamp() };
+
+          // Optimistic UI update
+          const nextMessages = [...messages, userMsg];
+          setMessages(nextMessages);
+          setInput("");
+
+          try {
+            // Build payload as required: { messages: [{ role, content }] }
+            const payload = {
+              messages: nextMessages.map((m) => ({ role: m.role, content: m.content })),
+            };
+
+            const resp = await fetch("/api/chat", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(payload),
+            });
+
+            if (!resp.ok) {
+              const t = await resp.text();
+              throw new Error(`API error (${resp.status}): ${t}`);
+            }
+
+            const data = await resp.json();
+
+            // Expected: { content: [{ text: "..." }] }
+            const modelText =
+              data &&
+              Array.isArray(data.content) &&
+              data.content[0] &&
+              typeof data.content[0].text === "string"
+                ? data.content[0].text.trim()
+                : "";
+
+            const assistantMsg = {
+              role: "assistant",
+              content: modelText || "I don't have specific Denver Health guidance on this topic. Please consult your HRBP for assistance.",
+              ts: nowStamp(),
+            };
+
+            setMessages((prev) => [...prev, assistantMsg]);
+          } catch (e) {
+            setError(e && e.message ? e.message : String(e));
+            // Also add a safe assistant reply so the chat doesn't stall
+            setMessages((prev) => [
+              ...prev,
+              {
+                role: "assistant",
+                content:
+                  "I don't have specific Denver Health guidance on this topic. Please consult your HRBP for assistance.",
+                ts: nowStamp(),
+              },
+            ]);
+          } finally {
+            setLoading(false);
+            setTimeout(() => textareaRef.current?.focus(), 0);
+          }
+        }
+
+        function onKeyDown(e) {
+          // Enter sends, Shift+Enter newline
+          if (e.key === "Enter" && !e.shiftKey) {
+            e.preventDefault();
+            sendMessage(input);
+          }
+        }
+
+        return (
+          <div className="app">
+            <header>
+              <div className="header-row">
+                <div className="brand">
+                  <div className="logo" aria-hidden="true">🏥</div>
+                  <div className="title-wrap">
+                    <p className="title">Denver Health Leader Navigator</p>
+                    <p className="subtitle">HRBP Assistant • Demo v1.0</p>
+                  </div>
+                </div>
+
+                <div className="header-actions">
+                  <button className="btn" onClick={resetChat} disabled={loading}>
+                    New Chat
+                  </button>
+                </div>
+              </div>
+            </header>
+
+            <main>
+              <section className="welcome">
+                <h2>Start here</h2>
+                <p>
+                  This tool is powered by Denver Health HR Documents. For more in depth information on safety concerns, harassment/discrimination allegations,
+                  legal questions, terminations, investigations, or anything not covered in the documents, kindly consult your HRBP.
+                </p>
+              </section>
+
+              <section className="quick-topics" aria-label="Quick topics">
+                {quickTopics.map((t) => (
+                  <button
+                    key={t.label}
+                    className="chip"
+                    disabled={loading}
+                    onClick={() => sendMessage(t.prompt)}
+                    title={t.prompt}
+                  >
+                    {t.label}
+                  </button>
+                ))}
+              </section>
+
+              <section className="chat-shell" aria-label="Chat">
+                <div className="messages" ref={messagesRef}>
+                  {messages.map((m, idx) => (
+                    <div key={idx} className={"row " + (m.role === "user" ? "user" : "assistant")}>
+                      <div className={"bubble " + (m.role === "user" ? "user" : "assistant")}>
+                        {m.content}
+                        <div className="meta">
+                          {m.role === "user" ? "You" : "Navigator"} • {m.ts}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+
+                  {loading && (
+                    <div className="row assistant">
+                      <div className="bubble assistant" aria-live="polite">
+                        <LoadingDots />
+                        <div className="meta">Navigator • thinking</div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                <div className="composer">
+                  <textarea
+                    ref={textareaRef}
+                    placeholder='Type your question… (Enter to send, Shift+Enter for a new line)'
+                    value={input}
+                    onChange={(e) => setInput(e.target.value)}
+                    onKeyDown={onKeyDown}
+                    disabled={loading}
+                    aria-label="Message input"
+                  ></textarea>
+
+                  <button
+                    className="send"
+                    onClick={() => sendMessage(input)}
+                    disabled={loading || !input.trim()}
+                    aria-label="Send"
+                  >
+                    Send
+                  </button>
+                </div>
+
+                <div className="status">
+                  {error ? <span className="error">Error: {error}</span> : <span>&nbsp;</span>}
+                </div>
+              </section>
+            </main>
+
+            <footer>
+              Denver Health &amp; Hospital Authority • Demo Version
+            </footer>
+          </div>
+        );
+      }
+
+      const root = ReactDOM.createRoot(document.getElementById("root"));
+      root.render(<App />);
+    </script>
+  </body>
+</html>
