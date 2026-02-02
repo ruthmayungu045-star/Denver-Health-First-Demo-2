@@ -1656,8 +1656,6 @@ Documentation templates
 When to involve HR vs act independently
 
 For these topics, direct leaders to their HRBP.`;
-
-Do NOT use markdown formatting like **, ##, or * in your responses. Use plain text only. For emphasis, use CAPS or quotation marks. For lists, use dashes (-) or numbers (1, 2, 3).
   
 function safeJsonParse(value) {
   if (value == null) return null;
@@ -1803,6 +1801,7 @@ module.exports = async function handler(req, res) {
     });
   }
 };
+
 
 
 
